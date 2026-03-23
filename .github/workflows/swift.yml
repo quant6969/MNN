@@ -1,0 +1,32 @@
+name: Build MNN IPA
+on: workflow_dispatch
+
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Build Archive
+        run: |
+          cd apps/iOS/MNNLLMChat
+          xcodebuild archive \
+            -project MNNLLMiOS.xcodeproj \
+            -scheme MNNLLMiOS \
+            -configuration Release \
+            -archivePath MNNLLMiOS.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO
+
+      - name: Export IPA
+        run: |
+          cd apps/iOS/MNNLLMChat
+          mkdir -p Payload
+          cp -r MNNLLMiOS.xcarchive/Products/Applications/*.app Payload/
+          zip -r MNNLLMChat.ipa Payload
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: MNN-LLM-Package
+          path: apps/iOS/MNNLLMChat/MNNLLMChat.ipa
