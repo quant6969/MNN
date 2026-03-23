@@ -1,4 +1,13 @@
-    scripts:
+workflows:
+  ios-mnn-build:
+    name: MNN LLM iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    working_directory: apps/iOS/MNNLLMChat
+    environment:
+      xcode: latest
+      cocoapods: default
+        scripts:
       - name: Build Unsigned IPA
         script: |
           # Сборка (как и была)
