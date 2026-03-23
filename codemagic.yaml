@@ -1,16 +1,7 @@
-workflows:
-  ios-mnn-build:
-    name: MNN LLM iOS Build
-    max_build_duration: 60
-    instance_type: mac_mini_m1
-    working_directory: apps/iOS/MNNLLMChat
-    environment:
-      xcode: latest
-      cocoapods: default
     scripts:
       - name: Build Unsigned IPA
         script: |
-          # Собираем архив без подписи
+          # Сборка (как и была)
           xcodebuild archive \
             -project MNNLLMiOS.xcodeproj \
             -scheme MNNLLMiOS \
@@ -20,9 +11,14 @@ workflows:
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGNING_IDENTITY=""
 
-          # Пакуем в IPA
+          # Пакуем
           mkdir -p Payload
           cp -r $CM_BUILD_DIR/MNNLLMiOS.xcarchive/Products/Applications/*.app Payload/
           zip -r MNNLLMChat.ipa Payload
-    artifacts:
-      - "*.ipa"
+
+      - name: Push to GitHub Releases
+        script: |
+          # Создаем тег и релиз прямо из мака
+          export GH_TOKEN=${GITHUB_TOKEN}
+          TAG="build-$(date +%Y%m%d-%H%M%S)"
+          gh release create "$TAG" MNNLLMChat.ipa --title "Auto Build $TAG" --notes "Билд для Кванта"
