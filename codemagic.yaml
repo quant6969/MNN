@@ -1,0 +1,28 @@
+workflows:
+  ios-mnn-build:
+    name: MNN LLM iOS Build
+    max_build_duration: 60
+    instance_type: mac_mini_m1
+    working_directory: apps/iOS/MNNLLMChat
+    environment:
+      xcode: latest
+      cocoapods: default
+    scripts:
+      - name: Build Unsigned IPA
+        script: |
+          # Собираем архив без подписи
+          xcodebuild archive \
+            -project MNNLLMiOS.xcodeproj \
+            -scheme MNNLLMiOS \
+            -configuration Release \
+            -archivePath $CM_BUILD_DIR/MNNLLMiOS.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGNING_IDENTITY=""
+
+          # Пакуем в IPA
+          mkdir -p Payload
+          cp -r $CM_BUILD_DIR/MNNLLMiOS.xcarchive/Products/Applications/*.app Payload/
+          zip -r MNNLLMChat.ipa Payload
+    artifacts:
+      - "*.ipa"
